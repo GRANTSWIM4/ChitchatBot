@@ -16,9 +16,12 @@ $Id: JMegaHal.java,v 1.4 2004/02/01 13:24:06 pjm2 Exp $
 
 package com.demigodsrpg.chitchatbot.ai;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.net.URL;
 import java.util.*;
-import java.net.*;
-import java.io.*;
 
 public class Brain implements Serializable {
     public static final int LIMIT = 10000; // Hard limit
@@ -168,7 +171,7 @@ public class Brain implements Serializable {
      * Generate a sentence that includes (if possible) the specified word.
      */
     public String getSentence(String word) {
-        if(COMMON_WORDS.contains(word.toLowerCase())) {
+        if (word != null && COMMON_WORDS.contains(word.toLowerCase())) {
             return getSentence();
         }
 
