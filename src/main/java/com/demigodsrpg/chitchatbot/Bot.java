@@ -7,6 +7,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Bot extends JavaPlugin {
+    static Bot INST;
     static final Brain BRAIN = new Brain();
     static final String PREFIX = ChatColor.DARK_GRAY + "[" + ChatColor.LIGHT_PURPLE + "F" + ChatColor.DARK_GRAY + "]" +
             ChatColor.GOLD + "[BOT]" + ChatColor.DARK_RED + "GustaBot" + ChatColor.GRAY + ": " + ChatColor.WHITE;
@@ -14,14 +15,15 @@ public class Bot extends JavaPlugin {
     @Override
     @SuppressWarnings("deprecation")
     public void onEnable() {
-        getLogger().info("Brain enabled, ready to chat.");
+        INST = this;
         getServer().getPluginManager().registerEvents(new BotListener(), this);
         getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
             String sentence = Bot.BRAIN.getSentence();
             if (!"".equals(sentence)) {
                 Chitchat.sendMessage(Bot.PREFIX + Bot.BRAIN.getSentence());
             }
-        }, 20, 7000);
+        }, 200, 7000);
+        getLogger().info("Brain enabled, ready to chat.");
     }
 
     @Override
