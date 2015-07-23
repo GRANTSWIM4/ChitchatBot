@@ -16,8 +16,12 @@ public class Bot extends JavaPlugin {
     public void onEnable() {
         getLogger().info("Brain enabled, ready to chat.");
         getServer().getPluginManager().registerEvents(new BotListener(), this);
-        getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> Chitchat.sendMessage(Bot.PREFIX +
-                Bot.BRAIN.getSentence()), 20, 7000);
+        getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
+            String sentence = Bot.BRAIN.getSentence();
+            if (!"".equals(sentence)) {
+                Chitchat.sendMessage(Bot.PREFIX + Bot.BRAIN.getSentence());
+            }
+        }, 20, 7000);
     }
 
     @Override
