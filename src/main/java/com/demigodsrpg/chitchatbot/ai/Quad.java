@@ -45,16 +45,22 @@ public class Quad implements java.io.Serializable {
     public boolean canEnd() {
         return canEnd;
     }
-    
+
+    public boolean isValid() {
+        return tokens[0] != null && tokens[1] != null && tokens[2] != null && tokens[3] != null;
+    }
+
+    @Override
     public int hashCode() {
         return tokens[0].hashCode() +
                tokens[1].hashCode() +
                tokens[2].hashCode() +
                tokens[3].hashCode();
     }
-    
+
+    @Override
     public boolean equals(Object o) {
-        if(o.equals(this)) {
+        if (o == this) {
             return true;
         } else if(o instanceof Quad) {
             Quad other = (Quad) o;

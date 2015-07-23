@@ -16,6 +16,7 @@ public class Bot extends JavaPlugin {
     @SuppressWarnings("deprecation")
     public void onEnable() {
         INST = this;
+        BRAIN.add(COPYPASTA); // initial data
         getServer().getPluginManager().registerEvents(new BotListener(), this);
         getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
             String sentence = Bot.BRAIN.getSentence();
@@ -32,4 +33,6 @@ public class Bot extends JavaPlugin {
         HandlerList.unregisterAll(this);
         getLogger().info("Brain purged, poor thing... :C");
     }
+
+    private static final String COPYPASTA = "What the fuck did you just fucking say about me, you little bitch?";
 }

@@ -103,9 +103,8 @@ public class Brain implements Serializable {
                     parts.add(str);
                 }
                 str = "";
-            } else {
-                str += ch;
             }
+            str += ch;
         }
         if (str.length() > 0) {
             parts.add(str);
@@ -116,9 +115,10 @@ public class Brain implements Serializable {
                 Quad quad = new Quad(parts.get(i), parts.get(i + 1), parts.get(i + 2), parts.get(i + 3));
                 if (QUADS.containsKey(quad)) {
                     quad = QUADS.get(quad);
-                }
-                else {
+                } else if (quad.isValid()) {
                     QUADS.put(quad, quad);
+                } else {
+                    continue;
                 }
 
                 if (i == 0) {
@@ -134,8 +134,7 @@ public class Brain implements Serializable {
                     if (!WORDS.containsKey(token)) {
                         WORDS.put(token, new HashSet<>(1));
                     }
-                    Set<Quad> set = WORDS.get(token);
-                    set.add(quad);
+                    WORDS.get(token).add(quad);
                 }
                 
                 if (i > 0) {
@@ -143,8 +142,7 @@ public class Brain implements Serializable {
                     if (!PREVIOUS.containsKey(quad)) {
                         PREVIOUS.put(quad, new HashSet<>(1));
                     }
-                    Set<String> set = PREVIOUS.get(quad);
-                    set.add(previousToken);
+                    PREVIOUS.get(quad).add(previousToken);
                 }
                 
                 if (i < parts.size() - 4) {
@@ -152,10 +150,8 @@ public class Brain implements Serializable {
                     if (!NEXT.containsKey(quad)) {
                         NEXT.put(quad, new HashSet<>(1));
                     }
-                    Set<String> set = NEXT.get(quad);
-                    set.add(nextToken);
+                    NEXT.get(quad).add(nextToken);
                 }
-                
             }
         }
     }
@@ -176,20 +172,20 @@ public class Brain implements Serializable {
         }
 
         LinkedList<String> parts = new LinkedList<>();
-        
-        Quad[] quads;
+
+        List<Quad> quads;
         if (WORDS.containsKey(word)) {
-            quads = WORDS.get(word).toArray(new Quad[WORDS.size()]);
+            quads = new ArrayList<>(WORDS.get(word));
         }
         else {
-            quads = QUADS.keySet().toArray(new Quad[QUADS.size()]);
+            quads = new ArrayList<>(QUADS.keySet());
         }
-        
-        if (quads.length == 0) {
+
+        if (quads.size() == 0) {
             return "";
         }
-        
-        Quad middleQuad = quads[RANDOM.nextInt(quads.length)];
+
+        Quad middleQuad = quads.get(RANDOM.nextInt(quads.size()));
         Quad quad = middleQuad;
         
         for (int i = 0; i < 4; i++) {
@@ -197,16 +193,16 @@ public class Brain implements Serializable {
         }
         
         while (!quad.canEnd()) {
-            String[] nextTokens = NEXT.get(quad).toArray(new String[NEXT.size()]);
-            String nextToken = nextTokens[RANDOM.nextInt(nextTokens.length)];
+            List<String> nextTokens = new ArrayList<>(NEXT.get(quad));
+            String nextToken = nextTokens.get(RANDOM.nextInt(nextTokens.size()));
             quad = QUADS.get(new Quad(quad.getToken(1), quad.getToken(2), quad.getToken(3), nextToken));
             parts.add(nextToken);
         }
         
         quad = middleQuad;
         while (!quad.canStart()) {
-            String[] previousTokens = PREVIOUS.get(quad).toArray(new String[PREVIOUS.size()]);
-            String previousToken = previousTokens[RANDOM.nextInt(previousTokens.length)];
+            List<String> previousTokens = new ArrayList<>(PREVIOUS.get(quad));
+            String previousToken = previousTokens.get(RANDOM.nextInt(previousTokens.size()));
             quad = QUADS.get(new Quad(previousToken, quad.getToken(0), quad.getToken(1), quad.getToken(2)));
             parts.addFirst(previousToken);
         }
@@ -215,8 +211,8 @@ public class Brain implements Serializable {
         for (Object token : parts) {
             sentence += token;
         }
-        
-        return sentence;
+
+        return sentence.trim();
     }
 
     /**
