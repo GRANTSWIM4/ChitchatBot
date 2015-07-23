@@ -12,6 +12,7 @@ public class Bot extends JavaPlugin {
             ChatColor.GOLD + "[BOT]" + ChatColor.DARK_RED + "GustaBot" + ChatColor.GRAY + ": " + ChatColor.WHITE;
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onEnable() {
         getLogger().info("Brain enabled, ready to chat.");
         getServer().getPluginManager().registerEvents(new BotListener(), this);
