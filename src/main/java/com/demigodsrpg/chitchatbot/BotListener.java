@@ -23,15 +23,17 @@ public class BotListener implements Listener {
                 String[] parts = message.trim().split("\\s+");
                 Chitchat.sendMessage(Bot.PREFIX + Bot.BRAIN.getSentence(parts[RAND.nextInt(parts.length)]));
             }, 30);
+            return;
         } else if (message.toLowerCase().contains("@senpaibot")) {
             Bukkit.getScheduler().scheduleAsyncDelayedTask(Bot.INST, () -> {
                 String[] parts = message.toLowerCase().trim().split("\\s+");
                 Chitchat.sendMessage(Bot.SENPAI + Bot.SENPAI_BRAIN.getSentence(parts[RAND.nextInt(parts.length)]));
             }, 30);
-        } else if (HQM.contains(event.getPlayer().getName())) {
-            Bot.SENPAI_BRAIN.add(message.toLowerCase());
-        } else {
-            Bot.BRAIN.add(message);
+            return;
         }
+        if (HQM.contains(event.getPlayer().getName())) {
+            Bot.SENPAI_BRAIN.add(message.toLowerCase());
+        }
+        Bot.BRAIN.add(message);
     }
 }
