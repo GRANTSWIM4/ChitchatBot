@@ -33,8 +33,8 @@ public class Brain implements Serializable {
     public static final String END_CHARS = ".!?";
     public static final List<String> COMMON_WORDS = Arrays.asList(
             "the", "of", "to", "and", "a", "in", "is", "it", "you", "that", "he", "was", "for", "on", "are", "with",
-            "as", "I", "his", "they", "be", "at", "one", "have", "this", "from", "or", "had", "by", "hot", "but",
-            "some", "what", "there", "we", "can", "out", "other", "were", "all", "your", "when", "up", "use", "word"
+            "as", "I", "his", "they", "be", "at", "one", "have", "this", "from", "or", "had", "by", "no", "but", "some",
+            "what", "there", "we", "can", "out", "other", "were", "all", "your", "when", "up", "use", "yes", "hot"
     );
 
     // This maps a single word to a HashSet of all the Quads it is in.
