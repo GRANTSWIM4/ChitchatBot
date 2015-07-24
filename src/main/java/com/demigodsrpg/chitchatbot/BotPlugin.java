@@ -25,20 +25,23 @@ public class BotPlugin extends JavaPlugin {
                 map(botName -> {
                     String prefix = ChatColor.translateAlternateColorCodes('&',
                             getConfig().getString("bots." + botName + ".prefix", ""));
-                    boolean talks = getConfig().getBoolean("bots." + botName + ".talks");
+                    boolean talks = getConfig().getBoolean("bots." + botName + ".talks", false);
+                    long freqTicks = getConfig().getLong("bots." + botName + ".freqTicks", 0);
                     List<String> listensTo = getConfig().getStringList("bots." + botName + ".listensTo");
-                    return new Bot(botName, prefix, talks, listensTo);
+                    return new Bot(botName, prefix, talks, freqTicks, listensTo);
                 }).collect(Collectors.toList()));
 
+        int count = 0;
         for (Bot bot : BOTS) {
             getServer().getPluginManager().registerEvents(bot, this);
             if (bot.getTalks()) {
+                count++;
                 getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
                     String sentence = bot.getBrain().getSentence();
                     if (!"".equals(sentence)) {
                         Chitchat.sendMessage(bot.getPrefix() + sentence);
                     }
-                }, 200, 7000);
+                }, count * 200, bot.getFreqTicks());
             }
         }
 

@@ -3,6 +3,7 @@ bots:
     prefix: '&8[&dF&8]&6[&2BOT&6]&4GustaBot&7: &f'
     listensTo: []
     talks: true
+    freqTicks: 7000
   HQMBot:
     prefix: '&8[&dF&8]&6[&2BOT&6]&3HQMBot&7: &f'
     listensTo:
@@ -10,8 +11,10 @@ bots:
       - 'HmmmQuestionMark'
       - 'HandyQuestMarker'
     talks: false
+    freqTicks: 0
   PandaBot:
     prefix: '&8[&dF&8]&6[&2BOT&6]&f&lPandaBot&7: &f'
     listensTo:
       - 'ChosenPanda'
     talks: false
+    freqTicks: 0

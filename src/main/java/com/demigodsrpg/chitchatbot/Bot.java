@@ -23,18 +23,20 @@ public class Bot implements Listener {
     private final Brain brain = new Brain();
     private final String name, prefix;
     private final boolean talks;
+    private final long freqTicks;
     private final Cache<String, Integer> replyCache = CacheBuilder.newBuilder().
             expireAfterWrite(6, TimeUnit.SECONDS).
             build();
 
-    public Bot(String name, String prefix, boolean talks, String... listensTo) {
-        this(name, prefix, talks, Arrays.asList(listensTo));
+    public Bot(String name, String prefix, boolean talks, long freqTicks, String... listensTo) {
+        this(name, prefix, talks, freqTicks, Arrays.asList(listensTo));
     }
 
-    public Bot(String name, String prefix, boolean talks, List<String> listensTo) {
+    public Bot(String name, String prefix, boolean talks, long freqTicks, List<String> listensTo) {
         this.name = name;
         this.prefix = prefix;
         this.talks = talks;
+        this.freqTicks = freqTicks;
         this.listensTo = listensTo;
     }
 
@@ -52,6 +54,10 @@ public class Bot implements Listener {
 
     public boolean getTalks() {
         return talks;
+    }
+
+    public long getFreqTicks() {
+        return freqTicks;
     }
 
     public int getSpamAmount(String replyTo) {
