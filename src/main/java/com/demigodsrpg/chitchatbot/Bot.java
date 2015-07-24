@@ -2,44 +2,94 @@ package com.demigodsrpg.chitchatbot;
 
 import com.demigodsrpg.chitchat.Chitchat;
 import com.demigodsrpg.chitchatbot.ai.Brain;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-public class Bot extends JavaPlugin {
-    static Bot INST;
-    static final Brain BRAIN = new Brain();
-    static final Brain SENPAI_BRAIN = new Brain();
-    static final String PREFIX = ChatColor.DARK_GRAY + "[" + ChatColor.LIGHT_PURPLE + "F" + ChatColor.DARK_GRAY + "]" +
-            ChatColor.GOLD + "[" + ChatColor.DARK_GREEN + "BOT" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + "GustaBot"
-            + ChatColor.GRAY + ": " + ChatColor.WHITE;
-    static final String SENPAI = ChatColor.GRAY + "«" + ChatColor.GOLD + "" + "bot" + ChatColor.GRAY + "»" +
-            ChatColor.DARK_AQUA + "SenpaiBot" + ChatColor.GRAY + ": " + ChatColor.WHITE;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public void onEnable() {
-        INST = this;
-        BRAIN.add(COPYPASTA); // initial data
-        SENPAI_BRAIN.add(SENPAI_PASTA);
-        getServer().getPluginManager().registerEvents(new BotListener(), this);
-        getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
-            String sentence = Bot.BRAIN.getSentence();
-            if (!"".equals(sentence)) {
-                Chitchat.sendMessage(Bot.PREFIX + Bot.BRAIN.getSentence());
+public class Bot implements Listener {
+    protected static final Random RANDOM = new Random();
+
+    private final List<String> listensTo;
+    private final Brain brain = new Brain();
+    private final String name, prefix;
+    private final boolean talks;
+    private final Cache<String, Integer> replyCache = CacheBuilder.newBuilder().
+            expireAfterWrite(6, TimeUnit.SECONDS).
+            build();
+
+    public Bot(String name, String prefix, boolean talks, String... listensTo) {
+        this(name, prefix, talks, Arrays.asList(listensTo));
+    }
+
+    public Bot(String name, String prefix, boolean talks, List<String> listensTo) {
+        this.name = name;
+        this.prefix = prefix;
+        this.talks = talks;
+        this.listensTo = listensTo;
+    }
+
+    public Brain getBrain() {
+        return brain;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public boolean getTalks() {
+        return talks;
+    }
+
+    public int getSpamAmount(String replyTo) {
+        int amount = replyCache.asMap().getOrDefault(replyTo, 0);
+        replyCache.put(replyTo, amount + 1);
+        return amount;
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onChat(AsyncPlayerChatEvent event) {
+        String message = event.getMessage();
+        if (message.toLowerCase().contains("@" + getName().toLowerCase())) {
+            int spamAmount = getSpamAmount(event.getPlayer().getName());
+            if (spamAmount < 1) {
+                Bukkit.getScheduler().scheduleAsyncDelayedTask(BotPlugin.INST, () -> {
+                    String[] parts = message.toLowerCase().trim().split("\\s+");
+                    String sentence = getBrain().getSentence(parts[RANDOM.nextInt(parts.length)]);
+                    if (!"".equals(sentence)) {
+                        Chitchat.sendMessage(getPrefix() + sentence);
+                    } else {
+                        Chitchat.sendMessage(getPrefix() + "beep. boop. beep.");
+                    }
+                }, 10 * (1 + RANDOM.nextInt(2)));
+            } else {
+                // Let them know the bot doesn't like spam
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(event.getFormat());
+                if (spamAmount % 5 == 0) {
+                    Bukkit.getScheduler().scheduleAsyncDelayedTask(BotPlugin.INST, () -> {
+                        event.getPlayer().sendMessage(ChatColor.DARK_GRAY + "PM from" + " <" + ChatColor.DARK_AQUA +
+                                getName() + ChatColor.DARK_GRAY + ">: " + ChatColor.GRAY + "Please don't spam me. :C");
+                    }, 10);
+                }
             }
-        }, 200, 7000);
-        getLogger().info("Brain enabled, ready to chat.");
+        } else if (listensTo.isEmpty()) {
+            getBrain().add(message);
+        } else if (listensTo.contains(event.getPlayer().getName())) {
+            getBrain().add(message);
+        }
     }
-
-    @Override
-    public void onDisable() {
-        BRAIN.purge();
-        SENPAI_BRAIN.purge();
-        HandlerList.unregisterAll(this);
-        getLogger().info("Brain purged, poor thing... :C");
-    }
-
-    private static final String COPYPASTA = "What the fuck did you just fucking say about me, you little bitch?";
-    private static final String SENPAI_PASTA = "Senpai won't notice you.";
 }

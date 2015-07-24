@@ -1,5 +1,5 @@
 name: ${project.name}
-main: com.demigodsrpg.chitchatbot.Bot
+main: com.demigodsrpg.chitchatbot.BotPlugin
 version: ${project.version}
 description: ${project.description}
 authors: [HmmmQuestionMark]
