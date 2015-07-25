@@ -144,10 +144,12 @@ public class Bot implements Listener {
                     }, 10);
                 }
             }
-        } else if (listensTo.isEmpty()) {
-            getBrain().add(message);
-        } else if (listensTo.contains(event.getPlayer().getName())) {
-            getBrain().add(message);
+        } else if (!message.contains("@")) {
+            if (listensTo.isEmpty()) {
+                getBrain().add(message);
+            } else if (listensTo.contains(event.getPlayer().getName())) {
+                getBrain().add(message);
+            }
         }
     }
 }
