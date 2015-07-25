@@ -1,17 +1,36 @@
 package com.demigodsrpg.chitchatbot.ai;
 
-public class Quad implements java.io.Serializable {
+import java.io.Serializable;
 
-    private String[] tokens;
-    private boolean canStart = false;
-    private boolean canEnd = false;
-    
-    public Quad(String s1, String s2, String s3, String s4) {
-        tokens = new String[]{s1, s2, s3, s4};
+public class Quad<T extends Serializable> implements Serializable {
+    String id;
+    T t1, t2, t3, t4;
+    boolean canStart = false;
+    boolean canEnd = false;
+
+    public Quad() {
     }
-    
-    public String getToken(int index) {
-        return tokens[index];
+
+    public Quad(T t1, T t2, T t3, T t4) {
+        this.id = t1.toString() + t2.toString() + t3.toString() + t4.toString();
+        this.t1 = t1;
+        this.t2 = t2;
+        this.t3 = t3;
+        this.t4 = t4;
+    }
+
+    public T getToken(int index) {
+        switch (index) {
+            case 0:
+                return t1;
+            case 1:
+                return t2;
+            case 2:
+                return t3;
+            case 3:
+                return t4;
+        }
+        return null;
     }
     
     public void setCanStart(boolean flag) {
@@ -31,15 +50,19 @@ public class Quad implements java.io.Serializable {
     }
 
     public boolean isValid() {
-        return tokens[0] != null && tokens[1] != null && tokens[2] != null && tokens[3] != null;
+        return t1 != null && t2 != null && t3 != null && t4 != null;
+    }
+
+    public String getId() {
+        return id;
     }
 
     @Override
     public int hashCode() {
-        return tokens[0].hashCode() +
-               tokens[1].hashCode() +
-               tokens[2].hashCode() +
-               tokens[3].hashCode();
+        return t1.hashCode() +
+                t2.hashCode() +
+                t3.hashCode() +
+                t4.hashCode();
     }
 
     @Override
@@ -48,10 +71,10 @@ public class Quad implements java.io.Serializable {
             return true;
         } else if(o instanceof Quad) {
             Quad other = (Quad) o;
-            return  other.tokens[0].equals(tokens[0]) &&
-                    other.tokens[1].equals(tokens[1]) &&
-                    other.tokens[2].equals(tokens[2]) &&
-                    other.tokens[3].equals(tokens[3]);
+            return other.t1.equals(t1) &&
+                    other.t2.equals(t2) &&
+                    other.t3.equals(t3) &&
+                    other.t4.equals(t4);
         }
         return false;
     }

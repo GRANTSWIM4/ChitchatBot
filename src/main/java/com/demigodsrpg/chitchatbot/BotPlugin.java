@@ -26,7 +26,7 @@ public class BotPlugin extends JavaPlugin {
                     String prefix = ChatColor.translateAlternateColorCodes('&',
                             getConfig().getString("bots." + botName + ".prefix", ""));
                     boolean talks = getConfig().getBoolean("bots." + botName + ".talks", false);
-                    long freqTicks = getConfig().getLong("bots." + botName + ".freqTicks", 0);
+                    long freqTicks = getConfig().getLong("bots." + botName + ".freqTicks", 7000);
                     List<String> listensTo = getConfig().getStringList("bots." + botName + ".listensTo");
                     return new Bot(botName, prefix, talks, freqTicks, listensTo);
                 }).collect(Collectors.toList()));
@@ -51,6 +51,7 @@ public class BotPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         for (Bot bot : BOTS) {
+            bot.saveToFile();
             bot.getBrain().purge();
         }
         HandlerList.unregisterAll(this);

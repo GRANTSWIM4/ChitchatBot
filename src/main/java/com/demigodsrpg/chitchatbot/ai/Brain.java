@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class Brain implements Serializable {
     public static final int LIMIT = 10000; // Hard limit
@@ -21,20 +23,20 @@ public class Brain implements Serializable {
             "what", "there", "we", "can", "out", "other", "were", "all", "your", "when", "up", "use", "yes", "hot"
     );
 
-    // This maps a single word to a HashSet of all the Quads it is in.
-    private final Map<String, Set<Quad>> WORDS = new HashMap<>();
+    // This maps an Id to a Quad
+    Map<String, Quad<String>> QUADS = new ConcurrentHashMap<>();
 
-    // A self-referential HashMap of Quads.
-    private final Map<Quad, Quad> QUADS = new HashMap<>();
+    // This maps a single word to a Set of all the Quads it is in.
+    Map<String, Set<String>> WORDS = new ConcurrentHashMap<>();
 
     // This maps a Quad onto a Set of Strings that may come next.
-    private final Map<Quad, Set<String>> NEXT = new HashMap<>();
+    Map<String, Set<String>> NEXT = new ConcurrentHashMap<>();
 
     // This maps a Quad onto a Set of Strings that may come before it.
-    private final Map<Quad, Set<String>> PREVIOUS = new HashMap<>();
+    Map<String, Set<String>> PREVIOUS = new ConcurrentHashMap<>();
 
     // Random
-    private final Random RANDOM = new Random();
+    private final transient Random RANDOM = new Random();
     
     /**
      * Construct an empty brain.
@@ -96,11 +98,11 @@ public class Brain implements Serializable {
         
         if (parts.size() >= 4) {
             for (int i = 0; i < parts.size() - 3; i++) {
-                Quad quad = new Quad(parts.get(i), parts.get(i + 1), parts.get(i + 2), parts.get(i + 3));
-                if (QUADS.containsKey(quad)) {
-                    quad = QUADS.get(quad);
+                Quad<String> quad = new Quad<>(parts.get(i), parts.get(i + 1), parts.get(i + 2), parts.get(i + 3));
+                if (QUADS.containsKey(quad.getId())) {
+                    quad = QUADS.get(quad.getId());
                 } else if (quad.isValid()) {
-                    QUADS.put(quad, quad);
+                    QUADS.put(quad.getId(), quad);
                 } else {
                     continue;
                 }
@@ -118,23 +120,23 @@ public class Brain implements Serializable {
                     if (!WORDS.containsKey(token)) {
                         WORDS.put(token, new HashSet<>(1));
                     }
-                    WORDS.get(token).add(quad);
+                    WORDS.get(token).add(quad.getId());
                 }
                 
                 if (i > 0) {
                     String previousToken = parts.get(i - 1);
-                    if (!PREVIOUS.containsKey(quad)) {
-                        PREVIOUS.put(quad, new HashSet<>(1));
+                    if (!PREVIOUS.containsKey(quad.getId())) {
+                        PREVIOUS.put(quad.getId(), new HashSet<>(1));
                     }
-                    PREVIOUS.get(quad).add(previousToken);
+                    PREVIOUS.get(quad.getId()).add(previousToken);
                 }
                 
                 if (i < parts.size() - 4) {
                     String nextToken = parts.get(i + 4);
-                    if (!NEXT.containsKey(quad)) {
-                        NEXT.put(quad, new HashSet<>(1));
+                    if (!NEXT.containsKey(quad.getId())) {
+                        NEXT.put(quad.getId(), new HashSet<>(1));
                     }
-                    NEXT.get(quad).add(nextToken);
+                    NEXT.get(quad.getId()).add(nextToken);
                 }
             }
         }
@@ -157,37 +159,37 @@ public class Brain implements Serializable {
 
         LinkedList<String> parts = new LinkedList<>();
 
-        List<Quad> quads;
-        if (WORDS.containsKey(word)) {
-            quads = new ArrayList<>(WORDS.get(word));
+        List<Quad<String>> quads;
+        if (word != null && WORDS.containsKey(word)) {
+            quads = new ArrayList<>(WORDS.get(word).stream().map(QUADS::get).collect(Collectors.toList()));
         }
         else {
-            quads = new ArrayList<>(QUADS.keySet());
+            quads = new ArrayList<>(QUADS.values());
         }
 
         if (quads.size() == 0) {
             return "";
         }
 
-        Quad middleQuad = quads.get(RANDOM.nextInt(quads.size()));
-        Quad quad = middleQuad;
+        Quad<String> middleQuad = quads.get(RANDOM.nextInt(quads.size()));
+        Quad<String> quad = middleQuad;
         
         for (int i = 0; i < 4; i++) {
             parts.add(quad.getToken(i));
         }
         
         while (!quad.canEnd()) {
-            List<String> nextTokens = new ArrayList<>(NEXT.get(quad));
+            List<String> nextTokens = new ArrayList<>(NEXT.get(quad.getId()));
             String nextToken = nextTokens.get(RANDOM.nextInt(nextTokens.size()));
-            quad = QUADS.get(new Quad(quad.getToken(1), quad.getToken(2), quad.getToken(3), nextToken));
+            quad = QUADS.get(new Quad<>(quad.getToken(1), quad.getToken(2), quad.getToken(3), nextToken).getId());
             parts.add(nextToken);
         }
         
         quad = middleQuad;
         while (!quad.canStart()) {
-            List<String> previousTokens = new ArrayList<>(PREVIOUS.get(quad));
+            List<String> previousTokens = new ArrayList<>(PREVIOUS.get(quad.getId()));
             String previousToken = previousTokens.get(RANDOM.nextInt(previousTokens.size()));
-            quad = QUADS.get(new Quad(previousToken, quad.getToken(0), quad.getToken(1), quad.getToken(2)));
+            quad = QUADS.get(new Quad<>(previousToken, quad.getToken(0), quad.getToken(1), quad.getToken(2)).getId());
             parts.addFirst(previousToken);
         }
         
