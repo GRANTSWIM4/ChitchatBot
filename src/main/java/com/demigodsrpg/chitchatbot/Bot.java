@@ -2,8 +2,6 @@ package com.demigodsrpg.chitchatbot;
 
 import com.demigodsrpg.chitchat.Chitchat;
 import com.demigodsrpg.chitchatbot.ai.Brain;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.Bukkit;
@@ -20,7 +18,6 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class Bot implements Listener {
     private static final Random RANDOM = new Random();
@@ -31,9 +28,6 @@ public class Bot implements Listener {
     private final String name, prefix;
     private final boolean talks;
     private final long freqTicks;
-    private final Cache<String, Integer> replyCache = CacheBuilder.newBuilder().
-            expireAfterWrite(6, TimeUnit.SECONDS).
-            build();
 
     public Bot(String name, String prefix, boolean talks, long freqTicks, String... listensTo) {
         this(name, prefix, talks, freqTicks, Arrays.asList(listensTo));
@@ -69,8 +63,8 @@ public class Bot implements Listener {
     }
 
     public int getSpamAmount(String replyTo) {
-        int amount = replyCache.asMap().getOrDefault(replyTo, 0);
-        replyCache.put(replyTo, amount + 1);
+        int amount = BotPlugin.SPAM_CACHE.asMap().getOrDefault(replyTo, 0);
+        BotPlugin.SPAM_CACHE.put(replyTo, amount + 1);
         return amount;
     }
 

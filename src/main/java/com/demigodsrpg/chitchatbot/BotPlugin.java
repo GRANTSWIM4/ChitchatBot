@@ -1,16 +1,23 @@
 package com.demigodsrpg.chitchatbot;
 
 import com.demigodsrpg.chitchat.Chitchat;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class BotPlugin extends JavaPlugin {
     public static BotPlugin INST;
+    static final Cache<String, Integer> SPAM_CACHE = CacheBuilder.newBuilder().
+            expireAfterWrite(8, TimeUnit.SECONDS).
+            build();
+
     private List<Bot> BOTS = new ArrayList<>();
 
     @Override
@@ -18,8 +25,7 @@ public class BotPlugin extends JavaPlugin {
     public void onEnable() {
         INST = this;
 
-        getConfig().options().copyDefaults(true);
-        saveConfig();
+        saveDefaultConfig();
 
         BOTS.addAll(getConfig().getConfigurationSection("bots").getKeys(false).stream().
                 map(botName -> {
